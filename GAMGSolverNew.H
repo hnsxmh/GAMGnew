@@ -292,6 +292,43 @@ class GAMGSolverNew
             const direction cmpt=0
         ) const;
 
+        //- Perform a single GAMG W-cycle with pre, post and finest smoothing.
+        void Wcycle
+        (
+            const PtrList<lduMatrix::smoother>& smoothers,
+            scalarField& psi,
+            const scalarField& source,
+            scalarField& Apsi,
+            scalarField& finestCorrection,
+            scalarField& finestResidual,
+
+            scalarField& scratch1,
+            scalarField& scratch2,
+
+            PtrList<scalarField>& coarseCorrFields,
+            PtrList<scalarField>& coarseSources,
+            const direction cmpt=0
+        ) const;
+
+        //- Perform a single GAMG W-cycle with pre, post and finest smoothing (new strategy).
+        void VcycleNew
+        (
+            const PtrList<lduMatrix::smoother>& smoothers,
+            scalarField& psi,
+            const scalarField& source,
+            scalarField& Apsi,
+            scalarField& finestCorrection,
+            scalarField& finestResidual,
+
+            scalarField& scratch1,
+            scalarField& scratch2,
+
+            PtrList<scalarField>& coarseCorrFields,
+            PtrList<scalarField>& coarseSources,
+            const direction cmpt,
+            label leveli
+        ) const;
+
         //- Create and return the dictionary to specify the PCG solver
         //  to solve the coarsest level
         dictionary PCGsolverDict

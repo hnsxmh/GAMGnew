@@ -27,6 +27,8 @@ License
 #include "PCG.H"
 #include "PBiCGStab.H"
 #include "SubField.H"
+#include "Wcycle.H"
+#include "VcycleNew.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -99,9 +101,11 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
             scratch2
         );
 
+        //#include "preRestriction.H"
+
         do
         {
-            Vcycle
+            Wcycle//VcycleNew//Vcycle
             (
                 smoothers,
                 psi,
@@ -115,8 +119,11 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
 
                 coarseCorrFields,
                 coarseSources,
-                cmpt
+                cmpt//,
+                //currLevel
             );
+
+            //#include "finalCorrection.H"
 
             // Calculate finest level residual field
             matrix_.Amul(Apsi, psi, interfaceBouCoeffs_, interfaces_, cmpt);
@@ -128,6 +135,8 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
                 finestResidual,
                 matrix().mesh().comm()
             )/normFactor;
+
+            //Info << "residual: " << solverPerf.finalResidual() << endl;
 
             if (debug >= 2)
             {
@@ -164,10 +173,15 @@ void Foam::GAMGSolverNew::Vcycle
     const direction cmpt
 ) const
 {
-    Info << "W cycle begins!" << endl;
     // debug = 2;
 
     const label coarsestLevel = matrixLevels_.size() - 1;
+    // if (coarseSources.set(8)) {
+    //     Info << "total levels: " << matrixLevels_.size() << endl;
+    // }
+    // if (coarseSources.set(7)) {
+    //     Info << "coarseSources: " << coarseSources.size() << endl;
+    // }
 
     // Restrict finest grid residual for the next level up.
     agglomeration_.restrictField(coarseSources[0], finestResidual, 0, true);
@@ -181,6 +195,7 @@ void Foam::GAMGSolverNew::Vcycle
     // Residual restriction (going to coarser levels)
     for (label leveli = 0; leveli < coarsestLevel; leveli++)
     {
+        //Info << "current level for restriction:" << leveli << endl;
         if (coarseSources.set(leveli + 1))
         {
             // If the optional pre-smoothing sweeps are selected
@@ -258,7 +273,7 @@ void Foam::GAMGSolverNew::Vcycle
         Pout<< endl;
     }
 
-
+    //Info << "coarsestLevel: " << coarsestLevel << endl;
     // Solve Coarsest level with either an iterative or direct solver
     if (coarseCorrFields.set(coarsestLevel))
     {
@@ -281,6 +296,7 @@ void Foam::GAMGSolverNew::Vcycle
 
     for (label leveli = coarsestLevel - 1; leveli >= 0; leveli--)
     {
+        //Info << "current level for prologation: " << leveli << endl;
         if (coarseCorrFields.set(leveli))
         {
             // Create a field for the pre-smoothed correction field
