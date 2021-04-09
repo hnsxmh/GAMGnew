@@ -81,7 +81,9 @@ Foam::GAMGSolverNew::GAMGSolverNew
     primitiveInterfaceLevels_(agglomeration_.size()),
     interfaceLevels_(agglomeration_.size()),
     interfaceLevelsBouCoeffs_(agglomeration_.size()),
-    interfaceLevelsIntCoeffs_(agglomeration_.size())
+    interfaceLevelsIntCoeffs_(agglomeration_.size()),
+
+    cycleType_("Vcycle")
 {
     readControls();
 
@@ -313,6 +315,8 @@ void Foam::GAMGSolverNew::readControls()
     controlDict_.readIfPresent("interpolateCorrection", interpolateCorrection_);
     controlDict_.readIfPresent("scaleCorrection", scaleCorrection_);
     controlDict_.readIfPresent("directSolveCoarsest", directSolveCoarsest_);
+
+    controlDict_.readIfPresent("cycleType", cycleType_);
 
     if (debug)
     {

@@ -75,7 +75,6 @@ class GAMGSolverNew
     // Private Data
 
         bool cacheAgglomeration_;
-
         //- Number of pre-smoothing sweeps
         label nPreSweeps_;
 
@@ -126,6 +125,9 @@ class GAMGSolverNew
 
         //- Hierarchy of interface internal coefficients
         PtrList<FieldField<Field, scalar>> interfaceLevelsIntCoeffs_;
+
+        //- cyclye type
+        word cycleType_;
 
         //- LU decompsed coarsest matrix
         autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
@@ -358,7 +360,7 @@ public:
     friend class GAMGPreconditioner;
 
     //- Runtime type information
-    TypeName("GAMG1");
+    TypeName("GAMGnew");
 
 
     // Constructors

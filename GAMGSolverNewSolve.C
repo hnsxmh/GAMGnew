@@ -101,29 +101,76 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
             scratch2
         );
 
-        //#include "preRestriction.H"
-
         do
         {
-            Wcycle//VcycleNew//Vcycle
-            (
-                smoothers,
-                psi,
-                source,
-                Apsi,
-                finestCorrection,
-                finestResidual,
+            if (cycleType_ == "Vcycle") 
+            {
+                Vcycle
+                (
+                    smoothers,
+                    psi,
+                    source,
+                    Apsi,
+                    finestCorrection,
+                    finestResidual,
 
-                (scratch1.size() ? scratch1 : Apsi),
-                (scratch2.size() ? scratch2 : finestCorrection),
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
 
-                coarseCorrFields,
-                coarseSources,
-                cmpt//,
-                //currLevel
-            );
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt
+                );
+            }
+            else if (cycleType_ == "Wcycle") 
+            {
+                Wcycle
+                (
+                    smoothers,
+                    psi,
+                    source,
+                    Apsi,
+                    finestCorrection,
+                    finestResidual,
 
-            //#include "finalCorrection.H"
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt
+                );
+            }
+            else if (cycleType_ == "VcycleNew")
+            {
+                #include "preRestriction.H"
+
+                VcycleNew
+                (
+                    smoothers,
+                    psi,
+                    source,
+                    Apsi,
+                    finestCorrection,
+                    finestResidual,
+
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt,
+                    currLevel
+                );
+
+                #include "finalCorrection.H"
+            }
+            else
+            {
+                FatalErrorInFunction
+                    << "selected cycle type doesnt exit.\n" 
+                    << exit(FatalError);
+            }
 
             // Calculate finest level residual field
             matrix_.Amul(Apsi, psi, interfaceBouCoeffs_, interfaces_, cmpt);
