@@ -7,9 +7,11 @@ how to use:
 
 2. Add library "libGAMGnew.so" in ControlDict of wanted case as follow:
 
-libs (
-      "libOpenFOAM.so"
+      libs 
+      (
+            "libOpenFOAM.so"
       )
+      
 3. change keyword solver in i.e. for pressure solver in fvSolution as follow:
 
     p
