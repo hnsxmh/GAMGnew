@@ -16,7 +16,8 @@ how to use:
 
     p
     {
-        solver          GAMG1;
+        solver          GAMGnew;
+        cycleType       Wcycle;//Vcycle, VcycleNew
         tolerance       1e-08;
         relTol          0.1;
         smoother        GaussSeidel;
