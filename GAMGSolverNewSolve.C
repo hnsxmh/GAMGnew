@@ -27,8 +27,10 @@ License
 #include "PCG.H"
 #include "PBiCGStab.H"
 #include "SubField.H"
-#include "Wcycle.H"
+#include "Fcycle.H"
 #include "VcycleNew.H"
+#include "FcycleNoRecursion.H"
+#include "Wcycle.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -37,7 +39,7 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
     scalarField& psi,
     const scalarField& source,
     const direction cmpt
-) const
+) const//const cant not use const qualifier in case of changing class member
 {
     // Setup class containing solver performance data
     solverPerformance solverPerf(typeName, fieldName_);
@@ -101,6 +103,8 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
             scratch2
         );
 
+        label currLevel = 0;
+
         do
         {
             if (cycleType_ == "Vcycle") 
@@ -122,9 +126,85 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
                     cmpt
                 );
             }
-            else if (cycleType_ == "Wcycle") 
+            else if (cycleType_ == "Fcycle") 
             {
+                #include "preRestriction.H"
+
+                Fcycle
+                (
+                    smoothers,
+
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt,
+                    currLevel
+                );
+
+                #include "finalCorrection.H"
+            }
+            else if (cycleType_ == "VcycleNew")
+            {
+                #include "preRestriction.H"
+
+                VcycleNew
+                (
+                    smoothers,
+
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt,
+                    currLevel
+                );
+
+                #include "finalCorrection.H"
+            }
+            else if (cycleType_ == "WcycleOld")
+            {
+                #include "preRestriction.H"
+
+                WcycleOld
+                (
+                    smoothers,
+
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt,
+                    currLevel
+                );
+
+                #include "finalCorrection.H"
+            }
+            else if (cycleType_ == "Wcycle")
+            {
+                #include "preRestriction.H"
+
                 Wcycle
+                (
+                    smoothers,
+
+                    (scratch1.size() ? scratch1 : Apsi),
+                    (scratch2.size() ? scratch2 : finestCorrection),
+
+                    coarseCorrFields,
+                    coarseSources,
+                    cmpt,
+                    currLevel
+                );
+
+                #include "finalCorrection.H"
+            }
+            else if (cycleType_ == "FcycleNoRecursion")
+            {
+                FcycleNoRecursion
                 (
                     smoothers,
                     psi,
@@ -140,30 +220,6 @@ Foam::solverPerformance Foam::GAMGSolverNew::solve
                     coarseSources,
                     cmpt
                 );
-            }
-            else if (cycleType_ == "VcycleNew")
-            {
-                #include "preRestriction.H"
-
-                VcycleNew
-                (
-                    smoothers,
-                    psi,
-                    source,
-                    Apsi,
-                    finestCorrection,
-                    finestResidual,
-
-                    (scratch1.size() ? scratch1 : Apsi),
-                    (scratch2.size() ? scratch2 : finestCorrection),
-
-                    coarseCorrFields,
-                    coarseSources,
-                    cmpt,
-                    currLevel
-                );
-
-                #include "finalCorrection.H"
             }
             else
             {
@@ -361,6 +417,8 @@ void Foam::GAMGSolverNew::Vcycle
             {
                 preSmoothedCoarseCorrField = coarseCorrFields[leveli];
             }
+
+            //Info << "correction: " << gSumMag(coarseCorrFields[leveli], matrix().mesh().comm()) << endl;
 
             agglomeration_.prolongField
             (

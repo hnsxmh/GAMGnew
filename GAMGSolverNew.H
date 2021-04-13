@@ -131,7 +131,8 @@ class GAMGSolverNew
 
         //- LU decompsed coarsest matrix
         autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
-
+        //- relaxation factor for prolongation
+        scalar relaxationFactor_;
 
     // Private Member Functions
 
@@ -294,8 +295,8 @@ class GAMGSolverNew
             const direction cmpt=0
         ) const;
 
-        //- Perform a single GAMG W-cycle with pre, post and finest smoothing.
-        void Wcycle
+        //- Perform a single GAMG F-cycle with pre, post and finest smoothing.
+        void FcycleNoRecursion
         (
             const PtrList<lduMatrix::smoother>& smoothers,
             scalarField& psi,
@@ -312,15 +313,52 @@ class GAMGSolverNew
             const direction cmpt=0
         ) const;
 
-        //- Perform a single GAMG W-cycle with pre, post and finest smoothing (new strategy).
+        //- Perform a single GAMG F-cycle with pre, post and finest smoothing.
+        void Fcycle
+        (
+            const PtrList<lduMatrix::smoother>& smoothers,
+
+            scalarField& scratch1,
+            scalarField& scratch2,
+
+            PtrList<scalarField>& coarseCorrFields,
+            PtrList<scalarField>& coarseSources,
+            const direction cmpt,
+            label leveli
+        ) const;
+
+        //- Perform a single GAMG V-cycle with pre, post and finest smoothing (new strategy).
         void VcycleNew
         (
             const PtrList<lduMatrix::smoother>& smoothers,
-            scalarField& psi,
-            const scalarField& source,
-            scalarField& Apsi,
-            scalarField& finestCorrection,
-            scalarField& finestResidual,
+
+            scalarField& scratch1,
+            scalarField& scratch2,
+
+            PtrList<scalarField>& coarseCorrFields,
+            PtrList<scalarField>& coarseSources,
+            const direction cmpt,
+            label leveli
+        ) const;
+
+        //- Perform a single GAMG W-cycle with pre, post and finest smoothing.
+        void WcycleOld
+        (
+            const PtrList<lduMatrix::smoother>& smoothers,
+
+            scalarField& scratch1,
+            scalarField& scratch2,
+
+            PtrList<scalarField>& coarseCorrFields,
+            PtrList<scalarField>& coarseSources,
+            const direction cmpt,
+            label leveli
+        ) const;
+
+        //- Perform a single GAMG W-cycle with pre, post and finest smoothing.
+        void Wcycle
+        (
+            const PtrList<lduMatrix::smoother>& smoothers,
 
             scalarField& scratch1,
             scalarField& scratch2,

@@ -83,7 +83,8 @@ Foam::GAMGSolverNew::GAMGSolverNew
     interfaceLevelsBouCoeffs_(agglomeration_.size()),
     interfaceLevelsIntCoeffs_(agglomeration_.size()),
 
-    cycleType_("Vcycle")
+    cycleType_("Vcycle"),
+    relaxationFactor_(1.0)
 {
     readControls();
 
@@ -317,6 +318,7 @@ void Foam::GAMGSolverNew::readControls()
     controlDict_.readIfPresent("directSolveCoarsest", directSolveCoarsest_);
 
     controlDict_.readIfPresent("cycleType", cycleType_);
+    controlDict_.readIfPresent("relaxationFactor", relaxationFactor_);
 
     if (debug)
     {

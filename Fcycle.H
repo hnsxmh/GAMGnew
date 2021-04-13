@@ -1,4 +1,4 @@
-void Foam::GAMGSolverNew::Wcycle
+void Foam::GAMGSolverNew::Fcycle
 (
     const PtrList<lduMatrix::smoother>& smoothers,
 
@@ -85,7 +85,7 @@ void Foam::GAMGSolverNew::Wcycle
         }
 
         // Residual is equal to source
-        // Info << "restriction in level: " << leveli << endl;
+        // Info << "restriction1 in level: " << leveli << endl;
 
         agglomeration_.restrictField
         (
@@ -122,7 +122,7 @@ void Foam::GAMGSolverNew::Wcycle
     }
     else 
     {
-        Wcycle
+        Fcycle
         (
             smoothers,
 
@@ -161,7 +161,13 @@ void Foam::GAMGSolverNew::Wcycle
         }
 
         //Info << "correction: " << gSumMag(coarseCorrFields[leveli], matrix().mesh().comm()) << endl;
-        coarseEpsFields[leveli + 1] *= relaxationFactor_; 
+        // Info << "prolong1 in level: " << leveli << endl;
+
+        // if (leveli == 4)
+        // {
+        //     Info << "eps: " << gSumMag(coarseEpsFields[leveli + 1], matrix().mesh().comm()) << endl;
+        // }
+        coarseEpsFields[leveli + 1] *= relaxationFactor_;
 
         agglomeration_.prolongField
         (
@@ -279,7 +285,7 @@ void Foam::GAMGSolverNew::Wcycle
         //Info << "residual in  "<< leveli <<" : " << gSumMag(coarseSources[leveli], matrix().mesh().comm()) << endl;
         //Info << "correction in  "<< leveli <<" : " << gSumMag(coarseCorrFields[leveli], matrix().mesh().comm()) << endl;
 
-        //Info << "restriction in level: " << leveli << endl;
+        // Info << "restriction2 in level: " << leveli << endl;
 
         agglomeration_.restrictField
         (
@@ -311,7 +317,7 @@ void Foam::GAMGSolverNew::Wcycle
     }
     else 
     {
-        Wcycle
+        VcycleNew
         (
             smoothers,
 
@@ -344,7 +350,8 @@ void Foam::GAMGSolverNew::Wcycle
             preSmoothedCoarseCorrField = coarseCorrFields[leveli];
         }
 
-        coarseEpsFields[leveli + 1] *= relaxationFactor_; 
+        // Info << "prolongField2 in level: " << leveli << endl;
+        coarseEpsFields[leveli + 1] *= relaxationFactor_;
 
         agglomeration_.prolongField
         (
@@ -436,5 +443,10 @@ void Foam::GAMGSolverNew::Wcycle
                 maxPostSweeps_
             )
         );
+
+        // if (leveli == 5)
+        // {
+        //     Info << "eps: " << gSumMag(coarseCorrFields[leveli], matrix().mesh().comm()) << endl;
+        // }
     }
 }

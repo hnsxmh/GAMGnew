@@ -1,11 +1,6 @@
 void Foam::GAMGSolverNew::VcycleNew
 (
     const PtrList<lduMatrix::smoother>& smoothers,
-    scalarField& psi,
-    const scalarField& source,
-    scalarField& Apsi,
-    scalarField& finestCorrection,
-    scalarField& finestResidual,
 
     scalarField& scratch1,
     scalarField& scratch2,
@@ -16,6 +11,8 @@ void Foam::GAMGSolverNew::VcycleNew
     label leveli
 ) const
 {
+    static PtrList<scalarField> coarseEpsFields(coarseCorrFields);
+
     const label coarsestLevel = matrixLevels_.size() - 1;
 
     // Residual restriction (going to coarser levels)
@@ -82,6 +79,8 @@ void Foam::GAMGSolverNew::VcycleNew
             coarseSources[leveli] -= ACf;
         }
 
+        // Info << "restrictionV in level: " << leveli << endl;
+
         // Residual is equal to source
         agglomeration_.restrictField
         (
@@ -90,7 +89,12 @@ void Foam::GAMGSolverNew::VcycleNew
             leveli + 1,
             true
         );
+
+        coarseEpsFields[leveli + 1] = 0.0;
     }
+
+
+
 
     if (debug >= 2 && nPreSweeps_)
     {
@@ -103,7 +107,7 @@ void Foam::GAMGSolverNew::VcycleNew
             //Info << "do smoothing in " << leveli + 1 << "  " << coarsestLevel << endl;
             solveCoarsestLevel
             (
-                coarseCorrFields[coarsestLevel],
+                coarseEpsFields[coarsestLevel],
                 coarseSources[coarsestLevel]
             );
         }       
@@ -112,16 +116,11 @@ void Foam::GAMGSolverNew::VcycleNew
         Foam::GAMGSolverNew::VcycleNew
         (
             smoothers,
-            psi,
-            source,
-            Apsi,
-            finestCorrection,
-            finestResidual,
-
+            
             scratch1,
             scratch2,
 
-            coarseCorrFields,
+            coarseEpsFields,
             coarseSources,
             cmpt,
             leveli + 1
@@ -150,12 +149,16 @@ void Foam::GAMGSolverNew::VcycleNew
             preSmoothedCoarseCorrField = coarseCorrFields[leveli];
         }
 
+        coarseEpsFields[leveli + 1] *= relaxationFactor_; 
+
+        // Info << "prolongV in level: " << leveli << endl;
+
         agglomeration_.prolongField
         (
             coarseCorrFields[leveli],
             (
-                coarseCorrFields.set(leveli + 1)
-                ? coarseCorrFields[leveli + 1]
+                coarseEpsFields.set(leveli + 1)
+                ? coarseEpsFields[leveli + 1]
                 : dummyField              // dummy value
             ),
             leveli + 1,
