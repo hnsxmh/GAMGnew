@@ -6,14 +6,14 @@ how to use:
 1. go into root directory and use the command: wmake libso (OpenFOAM v8 environment needed)
 
 2. Add library "libGAMGnew.so" in ControlDict of wanted case as follow:
-
+```
       libs 
       (
             "libOpenFOAM.so"
       )
-      
+```      
 3. change keyword solver in i.e. for pressure solver in fvSolution as follow, where cycle type is specified by keyword "cycleType" and relaxation factor for prolongation by keyword "relaxationFactor":
-
+```
     p
     {
         solver          GAMGnew;//GAMG1;
@@ -27,7 +27,7 @@ how to use:
         //maxPostSweeps   8;
         //FinestSweeps    1;
     }
-
+```
 
 
 4. run the case as normal
