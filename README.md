@@ -9,7 +9,7 @@ how to use:
 ```
       libs 
       (
-            "libOpenFOAM.so"
+            "libGAMGnew.so"
       )
 ```      
 3. change keyword solver in i.e. for pressure solver in fvSolution as follow, where cycle type is specified by keyword "cycleType" and relaxation factor for prolongation by keyword "relaxationFactor":
